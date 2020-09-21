@@ -1,18 +1,19 @@
 class Shape{
-    constructor(startPos, shape){
-        this.shapeType = shape['type'];
+    constructor(position, shape){
+        this.position = position;
+        this.shape = shape;
         this.blocks = [];
         for (let p in shape['posDeltas']) {
             let posDelta = shape['posDeltas'][p]
-            this.blocks.push(new Block(startPos[0] + posDelta[0], startPos[1] + posDelta[1], shape['color']));
+            this.blocks.push(new Block(this.position[0] + posDelta[0], this.position[1] + posDelta[1], shape['color']));
         }
-        this.pivot = [startPos[0] + shape['pivot'][0], startPos[1] + shape['pivot'][1]];
+        this.pivot = [this.position[0] + shape['pivot'][0], this.position[1] + shape['pivot'][1]];
         this.placed = false;
     }
 
-    draw() {
+    draw(s, f) {
         for (let b in this.blocks) {
-            this.blocks[b].draw();
+            this.blocks[b].draw(s, f);
         }
     }
 
@@ -21,6 +22,7 @@ class Shape{
             this.blocks[b].moveDown();
         }
         this.pivot[0]++;
+        this.position[0]++;
     }
 
     moveLeft() {
@@ -28,6 +30,7 @@ class Shape{
             this.blocks[b].moveLeft();
         }
         this.pivot[1]--;
+        this.position[1]--;
     }
 
     moveRight() {
@@ -35,6 +38,7 @@ class Shape{
             this.blocks[b].moveRight();
         }
         this.pivot[1]++;
+        this.position[1]++;
     }
 
     getRotatedBlocks(angle) {

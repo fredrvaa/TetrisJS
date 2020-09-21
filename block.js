@@ -15,8 +15,18 @@ class Block {
         this.col ++;
     }
 
-    draw() {
-        fill(color(this.color));
-        rect(this.col * CELL_SIZE, this.row * CELL_SIZE, CELL_SIZE, CELL_SIZE, 5, 5)
+    draw(s, f) {
+        if (s) {
+            noFill()
+            stroke(color(this.color));
+            strokeWeight(2);
+        }
+        else if (f) {
+            fill(color(this.color));
+            stroke(0);
+            strokeWeight(2);
+        }
+        
+        rect(this.col * CELL_SIZE + SIDEBAR_SIZE, this.row * CELL_SIZE, CELL_SIZE, CELL_SIZE, 5, 5)
     }
 }

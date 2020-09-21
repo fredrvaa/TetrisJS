@@ -4,40 +4,71 @@ class Stage{
     constructor(rows, cols){
         this.rows = rows;
         this.cols = cols;
+
+        // Initialize array of grid size fille with false
+        this.blocks = new Array(this.rows).fill(false).map(() => new Array(this.cols).fill(false));
+
+        // Initialize shapes
         this.shape = new Shape([0,5],shapeList[Math.floor(Math.random() * shapeList.length)]);
+        this.nextShape = shapeList[Math.floor(Math.random() * shapeList.length)];
+        this.heldShape = null;
+
+        this.previewBlocks = this.getPreviewBlocks();
 
         this.score = 0;
         this.level = 0;
 
-        // Initialize array of grid size fille with false
-        this.blocks = new Array(this.rows).fill(false).map(() => new Array(this.cols).fill(false));
+        this.shapeSwitched = false;
     }
 
     draw() {
         // Draws grid
         for (let r = 0; r < ROWS + 1; r++){
             strokeWeight(0.5);
-            line(0, r * CELL_SIZE, COLS * CELL_SIZE, r * CELL_SIZE);
+            line(SIDEBAR_SIZE, r * CELL_SIZE, COLS * CELL_SIZE + SIDEBAR_SIZE, r * CELL_SIZE);
         }
         for (let c = 0; c < COLS + 1; c++){
             strokeWeight(0.5);
-            line(c * CELL_SIZE, 0, c * CELL_SIZE, ROWS * CELL_SIZE);
+            line(c * CELL_SIZE + SIDEBAR_SIZE, 0, c * CELL_SIZE + SIDEBAR_SIZE, ROWS * CELL_SIZE);
         }
         
         // Draws placed blocks
         for (let r = 0; r < this.rows; r++) {
             for (let c = 0; c < this.cols; c++) {
                 if (this.blocks[r][c]) {
-                    this.blocks[r][c].draw();
+                    this.blocks[r][c].draw(false,true);
                 }
             }
         }
 
-        // Draws shape
-        this.shape.draw();
-    }
+        // Draws preview blocks
+        for (let b in this.previewBlocks) {
+            this.previewBlocks[b].draw(true, false)
+        }
 
-    
+        // Draws shape
+        this.shape.draw(false, true);
+
+        // Draws next shape in sidebar
+        for (let p in this.nextShape['posDeltas']) {
+            let posDelta = this.nextShape['posDeltas'][p]
+            let x = SIDEBAR_SIZE + (COLS + posDelta[1]) * CELL_SIZE + SIDEBAR_SIZE / 2 - CELL_SIZE / 2;
+            let y = CELL_SIZE * 2 + posDelta[0] * CELL_SIZE;
+            fill(color(this.nextShape['color']));
+            rect(x, y, CELL_SIZE, CELL_SIZE, 5, 5);
+        }
+
+        // Draws held shape in sidebar
+        if (this.heldShape != null) {
+            for (let p in this.heldShape['posDeltas']) {
+                let posDelta = this.heldShape['posDeltas'][p]
+                let x = (posDelta[1] - 1) * CELL_SIZE + SIDEBAR_SIZE / 2 - CELL_SIZE / 2;
+                let y = CELL_SIZE * 2 + posDelta[0] * CELL_SIZE;
+                fill(color(this.heldShape['color']));
+                rect(x, y, CELL_SIZE, CELL_SIZE, 5, 5);
+            } 
+        }
+    }
 
     isOutOfVerticalBounds(row) {
         if (row >= this.rows) {
@@ -79,10 +110,11 @@ class Stage{
         }
         else {
             if (this.shape.blocks.some((b) => b.row < 0)) {
-                console.log("YOU LOST");
+                console.log('YOU LOST');
             }
             else {
                 this.shape.placed = true;
+                this.shapeSwitched = false;
                 let rowsOfInterest = [];
                 for (let b in this.shape.blocks) {
                     let block = this.shape.blocks[b];
@@ -100,6 +132,7 @@ class Stage{
     moveShapeLeft() {
         if (!this.shape.blocks.some((b) => (this.isBlockCollision(b.row , b.col - 1) || this.isOutOfHorizontalBounds(b.col - 1)))){
             this.shape.moveLeft();
+            this.previewBlocks = this.getPreviewBlocks();
         }
         
     }
@@ -107,6 +140,7 @@ class Stage{
     moveShapeRight() {
         if (!this.shape.blocks.some((b) => (this.isBlockCollision(b.row , b.col + 1) || this.isOutOfHorizontalBounds(b.col + 1)))){
             this.shape.moveRight();
+            this.previewBlocks = this.getPreviewBlocks();
         }
     }
 
@@ -121,6 +155,7 @@ class Stage{
         else {
             this.shape.blocks = rotatedClockwise;
         }
+        this.previewBlocks = this.getPreviewBlocks();
     }
 
     hardDropShape() {
@@ -133,6 +168,51 @@ class Stage{
         if (!this.shape.placed) {
             this.moveShapeDown(true);
         }
+    }
+
+    holdShape() {
+        if (!this.shapeSwitched) {
+            if (this.heldShape == null) {
+                this.heldShape = this.shape.shape;
+                this.shape = new Shape([0,5], this.nextShape);
+                this.nextShape = shapeList[Math.floor(Math.random() * shapeList.length)];
+            }
+            else {
+                let s = this.shape.shape;
+                this.shape = new Shape(this.shape.position, this.heldShape);
+                this.heldShape = s;
+            }
+
+            this.shapeSwitched = true;
+            this.previewBlocks = this.getPreviewBlocks();
+        }
+    }
+
+    getPreviewBlocks() {
+        let collision = false;
+        let rDelta = 0;
+        while (!collision) {
+            for (let b in this.shape.blocks) {
+                let block = this.shape.blocks[b];
+                if (this.isOutOfVerticalBounds(block.row + rDelta + 1) || this.isBlockCollision(block.row + rDelta + 1, block.col)){
+                    collision = true;
+                    break;
+                }
+            }
+
+            if (collision) {
+                let blocks = [];
+                for (let b in this.shape.blocks) {
+                    let block = this.shape.blocks[b];
+                    blocks.push(new Block(block.row + rDelta, block.col, block.color));
+                }
+                return blocks;
+            }
+            else {
+                rDelta++;
+            }
+        }
+        return null;
     }
 
     rowFull(row) {
@@ -157,7 +237,7 @@ class Stage{
         for (let i = 0; i < rowsOfInterest.length; i++) {
             let row = rowsOfInterest[i] + rowsCleared;
             if (this.rowFull(row)){
-                console.log("Clear");
+                console.log('Clear');
                 this.clearRow(row);
                 rowsCleared++;
 
