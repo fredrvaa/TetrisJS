@@ -55,13 +55,13 @@ class Shape{
     }
 }
 
-var LShape = {'type':'L', 'color': 'rgb(255, 102, 0)', 'posDeltas': [[0,0], [1,0], [2,0], [2,1]], 'pivot':[1,0]};
-var JShape = {'type':'J', 'color': 'rgb(0, 51, 204)', 'posDeltas': [[0,0], [1,0], [2,0], [2,-1]], 'pivot':[1,0]};
-var TShape = {'type':'T', 'color': 'rgb(204, 51, 255)', 'posDeltas': [[0,0], [1,0], [1,1], [1,-1]], 'pivot':[1,0]};
-var IShape = {'type':'I', 'color': 'rgb(51, 204, 255)', 'posDeltas': [[0,0], [1,0], [2,0], [3,0]], 'pivot':[1.5,-0.5]};
-var OShape = {'type':'O', 'color': 'rgb(255, 204, 0)', 'posDeltas': [[0,0], [1,0], [1,1], [0,1]], 'pivot':[0.5,0.5]};
-var SShape = {'type':'S', 'color': 'rgb(51, 204, 51)', 'posDeltas': [[0,0], [0,1], [1,0], [1,-1]], 'pivot':[1,0]};
-var ZShape = {'type':'Z', 'color': 'rgb(255, 0, 0)', 'posDeltas': [[0,0], [0,-1], [1,0], [1,1]], 'pivot':[1,0]};
+var LShape = {'type':'L', 'color': 'rgb(255, 102, 0)', 'posDeltas': [[1,0], [1,1], [1,2], [0,2]], 'pivot':[1,1]};
+var JShape = {'type':'J', 'color': 'rgb(0, 51, 204)', 'posDeltas': [[0,0], [1,0], [1,1], [1,2]], 'pivot':[1,1]};
+var TShape = {'type':'T', 'color': 'rgb(204, 51, 255)', 'posDeltas': [[1,0], [1,1], [1,2], [0,1]], 'pivot':[1,1]};
+var IShape = {'type':'I', 'color': 'rgb(51, 204, 255)', 'posDeltas': [[1,0], [1,1], [1,2], [1,3]], 'pivot':[0.5,1.5]};
+var OShape = {'type':'O', 'color': 'rgb(255, 204, 0)', 'posDeltas': [[0,1], [1,1], [1,2], [0,2]], 'pivot':[0.5,1.5]};
+var SShape = {'type':'S', 'color': 'rgb(51, 204, 51)', 'posDeltas': [[1,0], [1,1], [0,1], [0,2]], 'pivot':[1,1]};
+var ZShape = {'type':'Z', 'color': 'rgb(255, 0, 0)', 'posDeltas': [[0,0], [0,1], [1,1], [1,2]], 'pivot':[1,1]};
 
 var shapeList = [
     LShape,

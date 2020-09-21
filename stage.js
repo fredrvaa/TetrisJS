@@ -9,7 +9,7 @@ class Stage{
         this.blocks = new Array(this.rows).fill(false).map(() => new Array(this.cols).fill(false));
 
         // Initialize shapes
-        this.shape = new Shape([0,5],shapeList[Math.floor(Math.random() * shapeList.length)]);
+        this.shape = new Shape([0,3],shapeList[Math.floor(Math.random() * shapeList.length)]);
         this.nextShape = shapeList[Math.floor(Math.random() * shapeList.length)];
         this.heldShape = null;
 
@@ -17,23 +17,24 @@ class Stage{
 
         this.score = 0;
         this.level = 0;
+        this.gameOver = false;
 
         this.shapeSwitched = false;
     }
 
     draw() {
         // Draws grid
-        for (let r = 0; r < ROWS + 1; r++){
+        for (let r = 2; r < ROWS + 1; r++){
             strokeWeight(0.5);
             line(SIDEBAR_SIZE, r * CELL_SIZE, COLS * CELL_SIZE + SIDEBAR_SIZE, r * CELL_SIZE);
         }
         for (let c = 0; c < COLS + 1; c++){
             strokeWeight(0.5);
-            line(c * CELL_SIZE + SIDEBAR_SIZE, 0, c * CELL_SIZE + SIDEBAR_SIZE, ROWS * CELL_SIZE);
+            line(c * CELL_SIZE + SIDEBAR_SIZE, 2 * CELL_SIZE, c * CELL_SIZE + SIDEBAR_SIZE, ROWS * CELL_SIZE);
         }
         
         // Draws placed blocks
-        for (let r = 0; r < this.rows; r++) {
+        for (let r = 2; r < this.rows; r++) {
             for (let c = 0; c < this.cols; c++) {
                 if (this.blocks[r][c]) {
                     this.blocks[r][c].draw(false,true);
@@ -54,6 +55,7 @@ class Stage{
             let posDelta = this.nextShape['posDeltas'][p]
             let x = SIDEBAR_SIZE + (COLS + posDelta[1]) * CELL_SIZE + SIDEBAR_SIZE / 2 - CELL_SIZE / 2;
             let y = CELL_SIZE * 2 + posDelta[0] * CELL_SIZE;
+            stroke(0);
             fill(color(this.nextShape['color']));
             rect(x, y, CELL_SIZE, CELL_SIZE, 5, 5);
         }
@@ -109,23 +111,18 @@ class Stage{
             this.shape.moveDown();
         }
         else {
-            if (this.shape.blocks.some((b) => b.row < 0)) {
-                console.log('YOU LOST');
+            this.shape.placed = true;
+            this.shapeSwitched = false;
+            let rowsOfInterest = [];
+            for (let b in this.shape.blocks) {
+                let block = this.shape.blocks[b];
+                this.blocks[block.row][block.col] = block;
+                rowsOfInterest.push(block.row);
             }
-            else {
-                this.shape.placed = true;
-                this.shapeSwitched = false;
-                let rowsOfInterest = [];
-                for (let b in this.shape.blocks) {
-                    let block = this.shape.blocks[b];
-                    this.blocks[block.row][block.col] = block;
-                    rowsOfInterest.push(block.row);
-                }
 
-                // Remove duplicates
-                rowsOfInterest = [...new Set(rowsOfInterest)];
-                this.calculateScore(rowsOfInterest, dropped);
-            }
+            // Remove duplicates
+            rowsOfInterest = [...new Set(rowsOfInterest)];
+            this.calculateScore(rowsOfInterest, dropped);
         }
     }
 
@@ -213,6 +210,34 @@ class Stage{
             }
         }
         return null;
+    }
+
+    newShape() {
+        let lowerPlacement = true;
+        let higherPlacement = true;
+        for (let p in this.nextShape.posDeltas) {
+            let posDelta = this.nextShape.posDeltas[p];
+            if (this.isBlockCollision(1 + posDelta[0], 3 + posDelta[1])) {
+                lowerPlacement = false;
+            }
+
+            if (this.isBlockCollision(posDelta[0], 3 + posDelta[1])) {
+                higherPlacement = false;
+            }
+        }
+
+        if (lowerPlacement) {
+            this.shape = new Shape([1,3], this.nextShape);
+        }
+        else if (higherPlacement) {
+            this.shape = new Shape([0,3], this.nextShape);
+        }
+        else {
+            this.gameOver = true;
+            console.log("YOU LOST!")
+        }
+        this.nextShape = shapeList[Math.floor(Math.random() * shapeList.length)];
+        this.previewBlocks = this.getPreviewBlocks();
     }
 
     rowFull(row) {

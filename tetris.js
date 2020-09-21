@@ -1,9 +1,10 @@
 /// <reference path="../p5.global-mode.d.ts" />
 
-// Standard tetris grid size
-var ROWS = 24;
+var ROWS = 22;
 var COLS = 10;
+
 var CELL_SIZE = 32;
+
 var TICK = 30;
 var SIDEHELD = TICK / 4; // How many frames side arrows must be held before shape is dropped faster
 var DOWNHELD = TICK / 4; // How many frames down arrow must be held before shape is dropped faster
@@ -47,53 +48,64 @@ function keyReleased() {
     }
 }
 
+// function preload() {
+//   font = loadFont("../PixelMania.ttf");
+// }
+
 function setup() {
-    createCanvas(COLS * (CELL_SIZE + 1) + SIDEBAR_SIZE * 2, ROWS * CELL_SIZE);
+    createCanvas((COLS + 1) * CELL_SIZE + SIDEBAR_SIZE * 2, (ROWS + 2) * CELL_SIZE);
     frameRate(TICK);
-  }
+}
   
 function draw() {
-    clear();
-    background(55);
-    stroke(0);
-    strokeWeight(3);
-    noFill();
-    rect(0,0, COLS * (CELL_SIZE + 1) + SIDEBAR_SIZE * 2, ROWS * CELL_SIZE);
+    if (!stage.gameOver) {
+      clear();
+      //textFont(font);
+      // Draws background 
+      background(55);
+      stroke(0);
+      strokeWeight(3);
+      noFill();
+      rect(0,0, (COLS + 2) * CELL_SIZE + SIDEBAR_SIZE * 2, (ROWS + 2) * CELL_SIZE);
 
-    if (stage.shape.placed) {
-      stage.shape = new Shape([0,5], stage.nextShape);
-      stage.nextShape = shapeList[Math.floor(Math.random() * shapeList.length)];
-      stage.previewBlocks = stage.getPreviewBlocks();
-    }
+      // Draws data
+      strokeWeight(1);
+      stroke(255);
+      text(stage.score.toString(), SIDEBAR_SIZE + ((COLS + 1) / 2) * CELL_SIZE, CELL_SIZE);
 
-    // Moves shape faster if arrow keys are held
-    if (keyIsPressed) {
-      if (keyCode == LEFT_ARROW) {
-        sideHeldCounter++;
-        if (sideHeldCounter > SIDEHELD && tickCounter % (TICK / 2)) {
-          stage.moveShapeLeft();
+      // Sets new shape
+      if (stage.shape.placed) {
+        stage.newShape();
+      }
+
+      // Moves shape faster if arrow keys are held
+      if (keyIsPressed) {
+        if (keyCode == LEFT_ARROW) {
+          sideHeldCounter++;
+          if (sideHeldCounter > SIDEHELD && tickCounter % (TICK / 2)) {
+            stage.moveShapeLeft();
+          }
+        }
+        else if (keyCode == RIGHT_ARROW) {
+          sideHeldCounter++;
+          if (sideHeldCounter > SIDEHELD && tickCounter % (TICK / 2)) {
+            stage.moveShapeRight();
+          }
+        }
+        else if (keyCode == DOWN_ARROW) {
+          downHeldCounter++;
+          if (downHeldCounter > DOWNHELD && tickCounter % (TICK / 2)) {
+            stage.softDropShape(true);
+          }
         }
       }
-      else if (keyCode == RIGHT_ARROW) {
-        sideHeldCounter++;
-        if (sideHeldCounter > SIDEHELD && tickCounter % (TICK / 2)) {
-          stage.moveShapeRight();
-        }
-      }
-      else if (keyCode == DOWN_ARROW) {
-        downHeldCounter++;
-        if (downHeldCounter > DOWNHELD && tickCounter % (TICK / 2)) {
-          stage.softDropShape(true);
-        }
-      }
-    }
 
-    // Shape gravity
-    tickCounter++;
-    if (!(tickCounter % TICK)) {
-      tickCounter = 0;
-      stage.softDropShape(false);
+      // Shape gravity
+      tickCounter++;
+      if (!(tickCounter % TICK)) {
+        tickCounter = 0;
+        stage.softDropShape(false);
+      }
+      stage.draw();
     }
-    stage.draw();
-
 }
